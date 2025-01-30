@@ -1,50 +1,80 @@
-"use strict";
-
-class Point {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
+/* eslint-disable no-use-before-define */
 class MathHelper {
   static get TWO_PI() {
     return Math.PI * 2;
   }
 
+  /**
+   * Generate random value in range.
+   * @param {number} min - Range start
+   * @param {number} max - Range end
+   * @returns {number} Random value
+   */
   static randomRange(min, max) {
     return Math.random() * (max - min) + min;
   }
 
+  /**
+   * The sine for the given degree value.
+   * @param {number} val - Value to convert
+   * @returns {number} The sine
+   */
   static sinDeg(val) {
     return Math.sin(MathHelper.deg2rad(val));
   }
 
+  /**
+   * The cosine for the given degree value.
+   * @param {number} val - Value to convert
+   * @returns {number} The cosine
+   */
   static cosDeg(val) {
     return Math.cos(MathHelper.deg2rad(val));
   }
 
+  /**
+   * Convert degrees to radians.
+   * @param {number} deg - Degree value
+   * @returns {number} The value in radians
+   */
   static deg2rad(deg) {
     return deg * (Math.PI / 180);
   }
 
+  /**
+   * Convert radians to degrees.
+   * @param {number} rad - Radian value
+   * @returns {number} The value in degrees.
+   */
   static rad2deg(rad) {
     return rad * (180 / Math.PI);
   }
 
+  /**
+   * Calculate the distance between two points.
+   * @param {number} x1 - X coordinate 1
+   * @param {number} y1 - Y coordinate 1
+   * @param {number} x2 - X coordinate 2
+   * @param {number} y2 - Y coordinate 2
+   * @returns {number} The distance between the two points.
+   */
   static distance(x1, y1, x2, y2) {
     const distx = x2 - x1;
     const disty = y2 - y1;
     return Math.sqrt(distx * distx + disty * disty);
   }
 
-  // Finds the integer square root of a positive number
+  /**
+   * Finds the integer square root of a positive number
+   * @param {number} num - The number
+   * @returns {number} The square root of the number.
+   */
   static Isqrt(num) {
-    if (0 == num) {
+    if (0 === num) {
       return 0;
     } // Avoid zero divide
-    const n = num / 2 + 1; // Initial estimate, never low
-    const n1 = (n + num / n) / 2;
+    let n = num / 2 + 1; // Initial estimate, never low
+    let n1 = (n + num / n) / 2;
     while (n1 < n) {
       n = n1;
       n1 = (n + num / n) / 2;
@@ -52,6 +82,11 @@ class MathHelper {
     return n;
   }
 
+  /**
+   * Check if the given number is an integer.
+   * @param {number} num - The value to check
+   * @returns {boolean} true for integers
+   */
   static isInteger(num) {
     return Math.trunc(num) === num;
   }
@@ -76,6 +111,11 @@ class ColorHelper {
     ];
   }
 
+  /**
+   * Clamps the value in safe RGB range (0-255)
+   * @param {number} c - The RGB component.
+   * @returns {number} The clamped value.
+   */
   static safeRGBComponent(c) {
     if (c < 0) {
       c = 0;
@@ -86,10 +126,25 @@ class ColorHelper {
     return Math.trunc(c);
   }
 
+  /**
+   * Constructs a 32bit integer representing an RGB color.
+   * @param {number} r - Red component.
+   * @param {number} g - Green component.
+   * @param {number} b - Blue component.
+   * @returns {number} The color
+   */
   static fromRGB(r, g, b) {
     return ColorHelper.fromRGBA(r, g, b, 255);
   }
 
+  /**
+   * Constructs a 32bit integer representing an RGBA color.
+   * @param {number} r - Red component.
+   * @param {number} g - Green component.
+   * @param {number} b - Blue component.
+   * @param {number} a - Alpha component.
+   * @returns {number} The color
+   */
   static fromRGBA(r, g, b, a) {
     if (r > 255) {
       r = 255;
@@ -112,22 +167,49 @@ class ColorHelper {
     return (r << 24) | (g << 16) | (b << 8) | a;
   }
 
+  /**
+   * Retrieve the red component from an RGBA color.
+   * @param {number} color - Source color.
+   * @returns {number} Red component only.
+   */
   static getR(color) {
     return (color >> 24) & 0xff;
   }
 
+  /**
+   * Retrieve the green component from an RGBA color.
+   * @param {number} color - Source color.
+   * @returns {number} Green component only.
+   */
   static getG(color) {
     return (color >> 16) & 0xff;
   }
 
+  /**
+   * Retrieve the blue component from an RGBA color.
+   * @param {number} color - Source color.
+   * @returns {number} Blue component only.
+   */
   static getB(color) {
     return (color >> 8) & 0xff;
   }
 
+  /**
+   * Retrieve the alpha component from an RGBA color.
+   * @param {number} color - Source color.
+   * @returns {number} Alpha component only.
+   */
   static getA(color) {
     return color & 0xff;
   }
 
+  /**
+   * Blend between two colors.
+   * @param {number} src - Source color.
+   * @param {number} dst - Destination color.
+   * @param {number} alpha - Blend factor.
+   * @returns {number} The blended color.
+   */
   static blend(src, dst, alpha) {
     if (alpha >= 255) {
       return dst;
@@ -145,6 +227,13 @@ class ColorHelper {
     );
   }
 
+  /**
+   * Blend between two colors additively.
+   * @param {number} src - Source color.
+   * @param {number} dst - Destination color.
+   * @param {number} alpha - Blend factor.
+   * @returns {number} The blended color.
+   */
   static blendAdditive(src, dst, alpha) {
     if (alpha >= 255) {
       return dst;
@@ -160,6 +249,13 @@ class ColorHelper {
     );
   }
 
+  /**
+   * Blend between two colors subtractively.
+   * @param {number} src - Source color.
+   * @param {number} dst - Destination color.
+   * @param {number} alpha - Blend factor.
+   * @returns {number} The blended color.
+   */
   static blendSubtractive(src, dst, alpha) {
     if (alpha >= 255) {
       return dst;
@@ -246,9 +342,17 @@ class ColorHelper {
     return (color << 8) | 0xff;
   }
 
+  /**
+   * Convert a color to a grayscale equivalent.
+   * @param {number} color - The color to convert.
+   * @returns {number} The grayscale equivalent of the color.
+   */
   static toGrayScale(color) {
-    const gs = getR(color) * 0.3 + getG(color) * 0.59 + getB(color) * 0.11;
-    return ColorHelper.fromRGBA(gs, gs, gs, getA(color));
+    const gs =
+      ColorHelper.getR(color) * 0.3 +
+      ColorHelper.getG(color) * 0.59 +
+      ColorHelper.getB(color) * 0.11;
+    return ColorHelper.fromRGBA(gs, gs, gs, ColorHelper.getA(color));
   }
 }
 
@@ -295,11 +399,7 @@ class CanvasHelper {
     const g = ColorHelper.getG(color);
     const b = ColorHelper.getB(color);
     const a = ColorHelper.getA(color);
-    for (
-      let bufferOffset = 0, x = 0;
-      bufferOffset < this.width * this.height * 4;
-      bufferOffset += 4
-    ) {
+    for (let bufferOffset = 0; bufferOffset < this.width * this.height * 4; bufferOffset += 4) {
       this.buffer[bufferOffset + 0] = r;
       this.buffer[bufferOffset + 1] = g;
       this.buffer[bufferOffset + 2] = b;
@@ -567,7 +667,7 @@ class City {
 
   findFriend() {
     this.friend = (this.idx + Math.trunc(1 + Math.random() * (NUM_CITIES / 5))) % NUM_CITIES;
-    if (this.friend == this.idx) {
+    if (this.friend === this.idx) {
       this.findFriend();
     }
   }
@@ -659,15 +759,14 @@ class SandTraveller {
   cityDistance(a, b) {
     a = Math.trunc(a);
     b = Math.trunc(b);
-    if (a != b) {
+    if (a !== b) {
       // calculate and return distance between cities
       const dx = this.cities[b].x - this.cities[a].x;
       const dy = this.cities[b].y - this.cities[a].y;
       const d = Math.sqrt(dx * dx + dy * dy);
       return d;
-    } else {
-      return 0.0;
     }
+    return 0.0;
   }
 
   startApp() {
@@ -703,23 +802,9 @@ class SandTraveller {
   }
 }
 
-class Application {
-  constructor(canvas) {
-    this.canvas = canvas;
-  }
-
-  onDraw() {
-    this.canvas.lock();
-
-    this.canvas.unlock();
-  }
-
-  startApp() {}
-}
-
 const application = new SandTraveller(core.canvas);
 
-function render(canvas, delta, timestamp) {
+function render() {
   application.onDraw();
 }
 
