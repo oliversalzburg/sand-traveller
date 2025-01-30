@@ -490,9 +490,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oliversalzburg/sand-traveller@workspace:.":
+"@oliversalzburg/sand-traveler@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@oliversalzburg/sand-traveller@workspace:."
+  resolution: "@oliversalzburg/sand-traveler@workspace:."
   dependencies:
     "@eslint/js": "npm:9.19.0"
     "@oliversalzburg/eslint-config": "npm:1.3.0"

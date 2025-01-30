@@ -352,7 +352,7 @@ const ITERATIONS_PER_UPDATE = 1;
 const CANVAS_SIZE_X = nodeCanvas.width;
 const CANVAS_SIZE_Y = nodeCanvas.height;
 const USE_SANDPAINTER = true;
-const DRAW_TRAVELLERS = false;
+const DRAW_TRAVELERS = false;
 const DRAW_PERPENDICULAR = true;
 const ADDITIVE_BLENDING = true;
 const SUBTRACTIVE_BLENDING = true;
@@ -514,7 +514,7 @@ class SandPainter {
 class City {
   /**
    * Constructs a City
-   * @param {SandTraveller} sandTraveller - SandTraveller
+   * @param {SandTraveler} sandTraveler - SandTraveler
    * @param {Canvas2D} canvas - Target canvas
    * @param {number} Dx - X position
    * @param {number} Dy - Y position
@@ -522,8 +522,8 @@ class City {
    * @param {number} Vy - Y velocity
    * @param {number} Idx - Index
    */
-  constructor(sandTraveller, canvas, Dx, Dy, Vx, Vy, Idx) {
-    this.sandTraveller = sandTraveller;
+  constructor(sandTraveler, canvas, Dx, Dy, Vx, Vy, Idx) {
+    this.sandTraveler = sandTraveler;
     this.canvas = canvas;
 
     // position
@@ -571,8 +571,8 @@ class City {
   }
 
   move() {
-    this.vx += (this.sandTraveller.cities[this.friend].x - this.x) / 1000;
-    this.vy += (this.sandTraveller.cities[this.friend].y - this.y) / 1000;
+    this.vx += (this.sandTraveler.cities[this.friend].x - this.x) / 1000;
+    this.vy += (this.sandTraveler.cities[this.friend].y - this.y) / 1000;
 
     this.vx *= 0.936;
     this.vy *= 0.936;
@@ -580,11 +580,11 @@ class City {
     this.x += this.vx;
     this.y += this.vy;
 
-    if (DRAW_TRAVELLERS) {
+    if (DRAW_TRAVELERS) {
       this.drawTravelers();
     }
     if (USE_SANDPAINTER) {
-      if (this.sandTraveller.cityDistance(this.idx, this.friend) < MIN_DISTANCE) {
+      if (this.sandTraveler.cityDistance(this.idx, this.friend) < MIN_DISTANCE) {
         this.drawSandPainters();
       }
     }
@@ -604,30 +604,30 @@ class City {
       const distance = Math.random() * MathHelper.TWO_PI;
       // draw traveler
       let dx =
-        (Math.sin(distance) * (this.x - this.sandTraveller.cities[this.friend].x)) / 2 +
-        (this.x + this.sandTraveller.cities[this.friend].x) / 2;
+        (Math.sin(distance) * (this.x - this.sandTraveler.cities[this.friend].x)) / 2 +
+        (this.x + this.sandTraveler.cities[this.friend].x) / 2;
       let dy =
-        (Math.sin(distance) * (this.y - this.sandTraveller.cities[this.friend].y)) / 2 +
-        (this.y + this.sandTraveller.cities[this.friend].y) / 2;
+        (Math.sin(distance) * (this.y - this.sandTraveler.cities[this.friend].y)) / 2 +
+        (this.y + this.sandTraveler.cities[this.friend].y) / 2;
       if (Math.random() * 1000 > 990) {
         // noise
         dx += Math.random() * 3 - Math.random() * 3;
         dy += Math.random() * 3 - Math.random() * 3;
       }
-      this.plotter(this.canvas, dx, dy, this.sandTraveller.cities[this.friend].myc, this.MAX_ALPHA);
+      this.plotter(this.canvas, dx, dy, this.sandTraveler.cities[this.friend].myc, this.MAX_ALPHA);
       // draw anti-traveler
       dx =
-        (-1 * Math.sin(distance) * (this.x - this.sandTraveller.cities[this.friend].x)) / 2 +
-        (this.x + this.sandTraveller.cities[this.friend].x) / 2;
+        (-1 * Math.sin(distance) * (this.x - this.sandTraveler.cities[this.friend].x)) / 2 +
+        (this.x + this.sandTraveler.cities[this.friend].x) / 2;
       dy =
-        (-1 * Math.sin(distance) * (this.y - this.sandTraveller.cities[this.friend].y)) / 2 +
-        (this.y + this.sandTraveller.cities[this.friend].y) / 2;
+        (-1 * Math.sin(distance) * (this.y - this.sandTraveler.cities[this.friend].y)) / 2 +
+        (this.y + this.sandTraveler.cities[this.friend].y) / 2;
       if (Math.random() * 1000 > 990) {
         // noise
         dx += Math.random() * 3 - Math.random() * 3;
         dy += Math.random() * 3 - Math.random() * 3;
       }
-      this.plotter(this.canvas, dx, dy, this.sandTraveller.cities[this.friend].myc, this.MAX_ALPHA);
+      this.plotter(this.canvas, dx, dy, this.sandTraveler.cities[this.friend].myc, this.MAX_ALPHA);
     }
   }
 
@@ -637,8 +637,8 @@ class City {
         sandPainter.renderPerpendicular(
           this.x,
           this.y,
-          this.sandTraveller.cities[this.friend].x,
-          this.sandTraveller.cities[this.friend].y,
+          this.sandTraveler.cities[this.friend].x,
+          this.sandTraveler.cities[this.friend].y,
         );
       }
     } else {
@@ -646,17 +646,17 @@ class City {
         sandPainter.render(
           this.x,
           this.y,
-          this.sandTraveller.cities[this.friend].x,
-          this.sandTraveller.cities[this.friend].y,
+          this.sandTraveler.cities[this.friend].x,
+          this.sandTraveler.cities[this.friend].y,
         );
       }
     }
   }
 }
 
-class SandTraveller {
+class SandTraveler {
   /**
-   * Constructs a new SandTraveller
+   * Constructs a new SandTraveler
    * @param {Canvas2D} canvas - The canvas to draw to.
    */
   constructor(canvas) {
@@ -733,7 +733,7 @@ class SandTraveller {
   }
 }
 
-const application = new SandTraveller(core.canvas);
+const application = new SandTraveler(core.canvas);
 
 function render() {
   application.onDraw();
