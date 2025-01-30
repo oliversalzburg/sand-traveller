@@ -1,3 +1,11 @@
+import { getDocumentElementTypeByIdStrict } from "@oliversalzburg/js-utils/dom/core.js";
+import {
+  Canvas2D,
+  putPixel32,
+  putPixel32Add,
+  putPixel32Sub,
+} from "@oliversalzburg/js-utils/graphics/canvas2d.js";
+
 /* eslint-disable no-use-before-define */
 class MathHelper {
   static get TWO_PI() {
@@ -270,71 +278,6 @@ class ColorHelper {
     return ColorHelper.fromRGB(r < 0 ? 0 : r, g < 0 ? 0 : g, b < 0 ? 0 : b);
   }
 
-  static putPixel32(canvas, x, y, color, alpha) {
-    x = Math.trunc(x);
-    y = Math.trunc(y);
-
-    if (x > canvas.width || y > canvas.height) {
-      return;
-    }
-    if (alpha > 255) {
-      alpha = 255;
-    }
-    const srcColor = canvas.getPixel32(x, y);
-    const newColor = ColorHelper.blend(srcColor, color, alpha);
-    canvas.setPixel32(x, y, newColor);
-  }
-
-  static putPixel32Add(canvas, x, y, color, alpha) {
-    x = Math.round(x);
-    y = Math.round(y);
-
-    if (x > canvas.width || y > canvas.height) {
-      return;
-    }
-    if (alpha > 255) {
-      alpha = 255;
-    }
-    const srcColor = canvas.getPixel32(x, y);
-    const newColor = ColorHelper.blendAdditive(srcColor, color, alpha);
-    canvas.setPixel32(x, y, newColor);
-  }
-
-  static putPixel32Sub(canvas, x, y, color, alpha) {
-    x = Math.round(x);
-    y = Math.round(y);
-
-    if (x > canvas.width || y > canvas.height) {
-      return;
-    }
-    if (alpha > 255) {
-      alpha = 255;
-    }
-    const srcColor = canvas.getPixel32(x, y);
-    const newColor = ColorHelper.blendSubtractive(srcColor, color, alpha);
-    canvas.setPixel32(x, y, newColor);
-  }
-
-  static putSubPixel32(canvas, x, y, color, alpha) {
-    if (x > canvas.width || y > canvas.height) {
-      return;
-    }
-    const xweight = x - Math.trunc(x);
-    const yweight = y - Math.trunc(y);
-    const xweightn = 1 - xweight;
-    const yweightn = 1 - yweight;
-
-    const alpha0 = xweightn * yweightn * alpha;
-    const alpha1 = xweight * yweightn * alpha;
-    const alpha2 = xweightn * yweight * alpha;
-    const alpha3 = xweight * yweight * alpha;
-
-    ColorHelper.putPixel32(canvas, x + 0, y + 0, color, alpha0);
-    ColorHelper.putPixel32(canvas, x + 1, y + 0, color, alpha1);
-    ColorHelper.putPixel32(canvas, x + 0, y + 1, color, alpha2);
-    ColorHelper.putPixel32(canvas, x + 1, y + 1, color, alpha3);
-  }
-
   static somecolor() {
     // pick some random good color
     const color =
@@ -356,59 +299,12 @@ class ColorHelper {
   }
 }
 
-class CanvasHelper {
-  constructor(canvas, width, height) {
-    this.canvas = canvas;
-    this.width = width;
-    this.height = height;
-
-    this.context = this.canvas.getContext("2d");
-    this.pixMap = this.context.createImageData(width, height);
-    this.buffer = this.pixMap.data;
-
-    this.context.font = "12px sans-serif";
-  }
-
-  lock() {
-    // noop
-  }
-  unlock() {
-    this.context.putImageData(this.pixMap, 0, 0);
-  }
-
-  getPixel32(x, y) {
-    const bufferOffset = Math.trunc((x + y * this.width) * 4);
-    return ColorHelper.fromRGBA(
-      this.buffer[bufferOffset + 0],
-      this.buffer[bufferOffset + 1],
-      this.buffer[bufferOffset + 2],
-      this.buffer[bufferOffset + 3],
-    );
-  }
-
-  setPixel32(x, y, color) {
-    const bufferOffset = Math.trunc((x + y * this.width) * 4);
-    this.buffer[bufferOffset + 0] = ColorHelper.getR(color);
-    this.buffer[bufferOffset + 1] = ColorHelper.getG(color);
-    this.buffer[bufferOffset + 2] = ColorHelper.getB(color);
-    this.buffer[bufferOffset + 3] = ColorHelper.getA(color);
-  }
-
-  clearWith(color) {
-    const r = ColorHelper.getR(color);
-    const g = ColorHelper.getG(color);
-    const b = ColorHelper.getB(color);
-    const a = ColorHelper.getA(color);
-    for (let bufferOffset = 0; bufferOffset < this.width * this.height * 4; bufferOffset += 4) {
-      this.buffer[bufferOffset + 0] = r;
-      this.buffer[bufferOffset + 1] = g;
-      this.buffer[bufferOffset + 2] = b;
-      this.buffer[bufferOffset + 3] = a;
-    }
-  }
-}
-
 class RenderHelper {
+  /**
+   * Constructs a RenderHelper.
+   * @param {Canvas2D} canvas - Target canvas
+   * @param {Function} renderLoop - Render loop
+   */
   constructor(canvas, renderLoop) {
     this.canvas = canvas;
     this.renderLoop = renderLoop;
@@ -416,6 +312,10 @@ class RenderHelper {
     this.boundMain = this.main.bind(this);
   }
 
+  /**
+   * Main render loop
+   * @param {number} timestamp - Current time
+   */
   main(timestamp) {
     const timeDelta = timestamp - this.previousTimestamp;
     this.drawFrame(timestamp, timeDelta);
@@ -425,10 +325,13 @@ class RenderHelper {
     this.previousTimestamp = timestamp;
   }
 
+  /**
+   * Draw one frame.
+   * @param {number} timestamp - Current time
+   * @param {number} delta - Time elapsed since last frame
+   */
   drawFrame(timestamp, delta) {
     this.renderLoop(this.canvas, delta, timestamp);
-
-    this.canvas.unlock();
 
     const fps = `${Math.round(1000 / delta)}fps`;
     this.canvas.context.strokeStyle = "rgba( 255, 255, 255, 0.85 )";
@@ -439,11 +342,8 @@ class RenderHelper {
   }
 }
 
-const nodeCanvas = document.getElementById("main");
-const core = new RenderHelper(
-  new CanvasHelper(nodeCanvas, nodeCanvas.width, nodeCanvas.height),
-  render,
-);
+const nodeCanvas = getDocumentElementTypeByIdStrict(document, "main", HTMLCanvasElement);
+const core = new RenderHelper(new Canvas2D(nodeCanvas), render);
 
 // ----------------------- Non-boilerplate code starts here -----------------------
 
@@ -463,6 +363,10 @@ const MIN_DISTANCE = 333;
 const NUM_SANDPAINTERS = 3;
 
 class SandPainter {
+  /**
+   * Construct new SandPainter.
+   * @param {Canvas2D} canvas - Canvas element
+   */
   constructor(canvas) {
     this.p = Math.random();
     this.color = ColorHelper.somecolor();
@@ -477,28 +381,32 @@ class SandPainter {
       // Both additive and subtractive blending (pick random)
       const r = Math.random();
       if (r > 0.5) {
-        this.plotter = ColorHelper.putPixel32Add;
+        this.plotter = putPixel32Add;
       } else {
-        this.plotter = ColorHelper.putPixel32Sub;
+        this.plotter = putPixel32Sub;
       }
       this.maxAlpha = 128;
     } else if (ADDITIVE_BLENDING) {
       // Only additive blending
-      this.plotter = ColorHelper.putPixel32Add;
+      this.plotter = putPixel32Add;
       this.maxAlpha = 128;
     } else if (SUBTRACTIVE_BLENDING) {
       // Only subtractive blending
-      this.plotter = ColorHelper.putPixel32Sub;
+      this.plotter = putPixel32Sub;
       this.maxAlpha = 128;
     } else {
       // Alpha blending
-      this.plotter = ColorHelper.putPixel32;
+      this.plotter = putPixel32;
       this.maxAlpha = 256;
     }
   }
 
   /**
    * Render a line of sand grains at a certain location
+   * @param {number} x - X
+   * @param {number} y - Y
+   * @param {number} ox - Origin X
+   * @param {number} oy - Origin Y
    */
   render(x, y, ox, oy) {
     // draw painting sweeps
@@ -542,6 +450,13 @@ class SandPainter {
     }
   }
 
+  /**
+   * Renders a line of grains.
+   * @param {number} x - The X coordinate to draw to.
+   * @param {number} y - The Y coordinate to draw to.
+   * @param {number} ox - The X coordinate of the origin.
+   * @param {number} oy - The Y coordinate of the origin.
+   */
   renderPerpendicular(x, y, ox, oy) {
     // transform perpendicular
     const mx = (x + ox) / 2;
@@ -597,6 +512,16 @@ class SandPainter {
 }
 
 class City {
+  /**
+   * Constructs a City
+   * @param {SandTraveller} sandTraveller - SandTraveller
+   * @param {Canvas2D} canvas - Target canvas
+   * @param {number} Dx - X position
+   * @param {number} Dy - Y position
+   * @param {number} Vx - X velocity
+   * @param {number} Vy - Y velocity
+   * @param {number} Idx - Index
+   */
   constructor(sandTraveller, canvas, Dx, Dy, Vx, Vy, Idx) {
     this.sandTraveller = sandTraveller;
     this.canvas = canvas;
@@ -625,22 +550,22 @@ class City {
       // Both additive and subtractive blending (pick random)
       const r = Math.random();
       if (r > 0.5) {
-        this.plotter = ColorHelper.putPixel32Add;
+        this.plotter = putPixel32Add;
       } else {
-        this.plotter = ColorHelper.putPixel32Sub;
+        this.plotter = putPixel32Sub;
       }
       this.MAX_ALPHA = 16;
     } else if (ADDITIVE_BLENDING) {
       // Only additive blending
-      this.plotter = ColorHelper.putPixel32Add;
+      this.plotter = putPixel32Add;
       this.MAX_ALPHA = 16;
     } else if (SUBTRACTIVE_BLENDING) {
       // Only subtractive blending
-      this.plotter = ColorHelper.putPixel32Sub;
+      this.plotter = putPixel32Sub;
       this.MAX_ALPHA = 16;
     } else {
       // Alpha blending
-      this.plotter = ColorHelper.putPixel32;
+      this.plotter = putPixel32;
       this.MAX_ALPHA = 48;
     }
   }
@@ -730,6 +655,10 @@ class City {
 }
 
 class SandTraveller {
+  /**
+   * Constructs a new SandTraveller
+   * @param {Canvas2D} canvas - The canvas to draw to.
+   */
   constructor(canvas) {
     this.canvas = canvas;
 
@@ -738,8 +667,6 @@ class SandTraveller {
   }
 
   onDraw() {
-    this.canvas.lock();
-
     for (let iter = 0; iter < ITERATIONS_PER_UPDATE; ++iter) {
       for (const city of this.cities) {
         city.move();
@@ -752,10 +679,14 @@ class SandTraveller {
         return;
       }
     }
-
-    this.canvas.unlock();
   }
 
+  /**
+   * Calculate the distance between two cities.
+   * @param {number} a - City index A
+   * @param {number} b - City index B
+   * @returns {number} Distance between the two cities.
+   */
   cityDistance(a, b) {
     a = Math.trunc(a);
     b = Math.trunc(b);
@@ -809,4 +740,4 @@ function render() {
 }
 
 application.startApp();
-core.main();
+core.main(0);
