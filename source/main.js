@@ -343,7 +343,7 @@ class RenderHelper {
 }
 
 const nodeCanvas = getDocumentElementTypeByIdStrict(document, "main", HTMLCanvasElement);
-const core = new RenderHelper(new Canvas2D(nodeCanvas), render);
+const core = new RenderHelper(new Canvas2D(nodeCanvas, { supportReadBack: true }), render);
 
 // ----------------------- Non-boilerplate code starts here -----------------------
 
