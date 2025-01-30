@@ -5,7 +5,7 @@ import { viteSingleFile } from "vite-plugin-singlefile";
  * @type {import("vite").UserConfig}
  */
 export default {
-  base: "https://oliversalzburg.github.io/substrate/",
+  base: "https://oliversalzburg.github.io/sand-traveler/",
   build: {
     modulePreload: {
       polyfill: false,
