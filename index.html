@@ -2,12 +2,80 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta property="og:image" content="https://oliversalzburg.github.io/sand-traveler/canvas.png" />
+    <meta property="og:title" content="Sand Traveler" />
+    <meta property="og:description" content="A canvas experiment by Oliver Salzburg" />
+    <meta property="og:url" content="https://oliversalzburg.github.io/sand-traveler/" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <link rel="stylesheet" href="source/main.css" />
+    <title>Sand Traveler</title>
+    <style>
+      #hash {
+        font-family: monospace;
+      }
+      @keyframes color-change {
+        0% {
+          color: white;
+        }
+        50% {
+          color: black;
+        }
+        100% {
+          color: white;
+        }
+      }
+      .calibration {
+        align-items: center;
+        animation: color-change 10s infinite;
+        display: flex;
+        font-family: sans-serif;
+        font-size: 60px;
+        font-weight: bolder;
+        height: 100%;
+        justify-content: center;
+        left: 0;
+        position: absolute;
+        text-align: center;
+        top: 0;
+        white-space: pre;
+        width: 100%;
+        z-index: 10;
+
+        color: #fff;
+        -webkit-text-stroke: 3px #888;
+      }
+
+      body #main {
+        background-color: #888;
+      }
+      body.darkMode #main {
+        background-color: #000;
+      }
+      body.lightMode #main {
+        background-color: #fff;
+      }
+
+      #paused {
+        animation: color-change 10s infinite;
+        color: #888;
+        font-family: sans-serif;
+        font-size: 60px;
+        font-weight: 900;
+        padding: 0 20px;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    </style>
   </head>
 
-  <body>
-    <canvas id="main" width="860" height="860"></canvas>
+  <body style="display: none">
+    <canvas id="palette" width="1024" height="16" style="display: none"></canvas>
+    <canvas id="main" class="darkMode" width="860" height="860"></canvas>
+    <p class="credits">
+      a canvas experiment by <a href="https://github.com/oliversalzburg">Oliver Salzburg</a
+      ><br />inspired by original Sand Traveler artwork by Jared Tarbell<br /><br />
+      <span id="hash" title="artwork hash"></span>
+    </p>
   </body>
-  <script src="source/main.js" type="module"></script>
+  <script src="source/main.ts" type="module"></script>
 </html>
