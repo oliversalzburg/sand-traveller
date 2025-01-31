@@ -24,11 +24,13 @@ const applicationOptions = {
   blendingSubtractive: true,
   canvasColorDark: fromRGBA(0, 0, 0, 5),
   canvasColorLight: fromRGBA(255, 255, 255, 5),
-
+  cityCount: 400,
   darkMode: true,
-
+  drawTravelers: false,
+  iterationsPerUpdate: 4,
+  sandPainterCount: 3,
   seed: seedFromString("Sand Traveler by Jared Tarbell"),
-
+  velocity: 20,
   viewport: {
     x: 0,
     y: 0,
@@ -38,18 +40,11 @@ const applicationOptions = {
 };
 type ApplicationOptions = typeof applicationOptions;
 
-const CANVAS_BACKGROUND_COLOR = 0x000000ff;
-const ITERATIONS_PER_UPDATE = 1;
 const CANVAS_SIZE_X = canvasNode.width;
 const CANVAS_SIZE_Y = canvasNode.height;
-const USE_SANDPAINTER = true;
-const DRAW_TRAVELERS = false;
 const DRAW_PERPENDICULAR = true;
-const VELOCITY = 20;
 const MAX_ITERATIONS = 120 * 20;
-const NUM_CITIES = 400;
 const MIN_DISTANCE = 333;
-const NUM_SANDPAINTERS = 3;
 
 class SandPainter {
   readonly host: Application;
@@ -275,10 +270,10 @@ class City {
     this.myc = 0xffffffff; //palette.someColor();
     this.maxAlpha = 0;
 
-    this.sands = new Array<SandPainter>(NUM_SANDPAINTERS);
+    this.sands = new Array<SandPainter>(this.host.options.sandPainterCount);
 
     // create sand painters
-    for (let n = 0; n < NUM_SANDPAINTERS; ++n) {
+    for (let n = 0; n < this.host.options.sandPainterCount; ++n) {
       this.sands[n] = new SandPainter(host);
     }
 
@@ -319,10 +314,10 @@ class City {
     this.x += this.vx;
     this.y += this.vy;
 
-    if (DRAW_TRAVELERS) {
+    if (this.host.options.drawTravelers) {
       this.drawTravelers();
     }
-    if (USE_SANDPAINTER) {
+    if (0 < this.host.options.sandPainterCount) {
       if (this.host.cityDistance(this.idx, this.friend) < MIN_DISTANCE) {
         this.drawSandPainters();
       }
@@ -330,7 +325,9 @@ class City {
   }
 
   findFriend() {
-    this.friend = (this.idx + Math.trunc(1 + Math.random() * (NUM_CITIES / 5))) % NUM_CITIES;
+    this.friend =
+      (this.idx + Math.trunc(1 + Math.random() * (this.host.options.cityCount / 5))) %
+      this.host.options.cityCount;
     if (this.friend === this.idx) {
       this.findFriend();
     }
@@ -420,7 +417,7 @@ class Application {
     this.random = new Random(options.seed);
     this.palette = palette;
 
-    this.cities = new Array<City>(NUM_CITIES);
+    this.cities = new Array<City>(this.options.cityCount);
     this.iterationCount = 0;
   }
 
@@ -435,7 +432,7 @@ class Application {
       return;
     }
 
-    for (let iter = 0; iter < ITERATIONS_PER_UPDATE; ++iter) {
+    for (let iter = 0; iter < this.options.iterationsPerUpdate; ++iter) {
       for (const city of this.cities) {
         city.move();
       }
@@ -480,13 +477,13 @@ class Application {
     );
     this.canvas.update();
 
-    let velocity = VELOCITY;
+    let velocity = this.options.velocity;
     let vvt = 0.2;
     const ot = Math.random() * TWO_PI;
-    for (let cityIdx = 0; cityIdx < NUM_CITIES; ++cityIdx) {
+    for (let cityIdx = 0; cityIdx < this.options.cityCount; ++cityIdx) {
       // This is the original implementation, but in Processing "( 1.1 - cityIdx / NUM_CITIES )" always evaluates to 1.1
       //const tinc = ot + ( 1.1 - cityIdx / NUM_CITIES ) * 2 * cityIdx * TWO_PI / NUM_CITIES;
-      const tinc = ot + (1.1 * 2 * cityIdx * TWO_PI) / NUM_CITIES;
+      const tinc = ot + (1.1 * 2 * cityIdx * TWO_PI) / this.options.cityCount;
       const vx = velocity * Math.sin(tinc);
       const vy = velocity * Math.cos(tinc);
       this.cities[cityIdx] = new City(
