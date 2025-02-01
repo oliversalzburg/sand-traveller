@@ -420,6 +420,13 @@ class Application {
     this.options = { ...this.options, ...options };
     this.canvas = canvas;
     this.random = new Random(this.options.seed);
+    this.canvas.canvasElement.width = (document.body.clientWidth / 2) * window.devicePixelRatio;
+    this.canvas.canvasElement.height = (document.body.clientHeight / 2) * window.devicePixelRatio;
+    (this.canvas.canvasElement as HTMLCanvasElement).style.width =
+      `${document.body.clientWidth / 2}px`;
+    (this.canvas.canvasElement as HTMLCanvasElement).style.height =
+      `${document.body.clientHeight / 2}px`;
+    this.canvas.refreshCanvasNode();
   }
 
   onDraw() {
