@@ -26,7 +26,10 @@ const applicationOptions = {
   canvasColorLight: fromRGBA(255, 255, 255, 5),
   cityCount: 400,
   darkMode: true,
+  distanceMinimum: 333,
   drawTravelers: false,
+  drawTravelersPerpendicular: true,
+  iterationsMax: 120 * 20,
   iterationsPerUpdate: 4,
   sandPainterCount: 3,
   seed: seedFromString("Sand Traveler by Jared Tarbell"),
@@ -39,12 +42,6 @@ const applicationOptions = {
   },
 };
 type ApplicationOptions = typeof applicationOptions;
-
-const CANVAS_SIZE_X = canvasNode.width;
-const CANVAS_SIZE_Y = canvasNode.height;
-const DRAW_PERPENDICULAR = true;
-const MAX_ITERATIONS = 120 * 20;
-const MIN_DISTANCE = 333;
 
 class SandPainter {
   readonly host: Application;
@@ -259,7 +256,6 @@ class City {
     this.host = host;
     this.canvas = canvas;
 
-    // position
     this.x = Dx;
     this.y = Dy;
     this.vx = Vx;
@@ -267,7 +263,7 @@ class City {
     this.idx = Math.trunc(Idx);
 
     this.friend = 0;
-    this.myc = 0xffffffff; //palette.someColor();
+    this.myc = palette.someColor();
     this.maxAlpha = 0;
 
     this.sands = new Array<SandPainter>(this.host.options.sandPainterCount);
@@ -278,8 +274,7 @@ class City {
     }
 
     if (this.host.options.blendingAdditive && this.host.options.blendingSubtractive) {
-      // Both additive and subtractive blending (pick random)    //this.canvas.refreshCanvasNode();
-
+      // Both additive and subtractive blending (pick random)
       const r = Math.random();
       if (r > 0.5) {
         this.plotter = putPixel32Add;
@@ -300,8 +295,6 @@ class City {
       this.plotter = putPixel32;
       this.maxAlpha = 48;
     }
-
-    this.maxAlpha = 255;
   }
 
   move() {
@@ -318,7 +311,7 @@ class City {
       this.drawTravelers();
     }
     if (0 < this.host.options.sandPainterCount) {
-      if (this.host.cityDistance(this.idx, this.friend) < MIN_DISTANCE) {
+      if (this.host.cityDistance(this.idx, this.friend) < this.host.options.distanceMinimum) {
         this.drawSandPainters();
       }
     }
@@ -380,7 +373,7 @@ class City {
   }
 
   drawSandPainters() {
-    if (DRAW_PERPENDICULAR) {
+    if (this.host.options.drawTravelersPerpendicular) {
       for (const sandPainter of this.sands) {
         sandPainter.renderPerpendicular(
           this.x,
@@ -437,7 +430,7 @@ class Application {
         city.move();
       }
 
-      if (++this.iterationCount > MAX_ITERATIONS) {
+      if (++this.iterationCount > this.options.iterationsMax) {
         this.start();
         return;
       }
@@ -489,8 +482,8 @@ class Application {
       this.cities[cityIdx] = new City(
         this,
         this.canvas,
-        CANVAS_SIZE_X / 2 + vx * 2,
-        CANVAS_SIZE_Y / 2 + vy * 2,
+        this.canvas.width / 2 + vx * 2,
+        this.canvas.height / 2 + vy * 2,
         vx,
         vy,
         cityIdx,
