@@ -31,6 +31,8 @@ const applicationOptions = {
   drawTravelersPerpendicular: true,
   iterationsMax: 120 * 20,
   iterationsPerUpdate: 4,
+  // The colors to use.
+  paletteIndex: 0,
   sandPainterCount: 3,
   seed: seedFromString("Sand Traveler by Jared Tarbell"),
   velocity: 20,
