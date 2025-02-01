@@ -28,7 +28,7 @@ const applicationOptions = {
   canvasColorLight: fromRGBA(255, 255, 255, 5),
   cityCount: 400,
   darkMode: true,
-  devMode: true,
+  devMode: false,
   distanceMinimum: 333,
   drawTravelers: false,
   drawTravelersPerpendicular: true,
@@ -268,7 +268,7 @@ class City {
     this.idx = Math.trunc(Idx);
 
     this.friend = 0;
-    this.myc = palette.someColor();
+    this.myc = palette.someColor(this.host.random);
     this.maxAlpha = 0;
 
     this.sands = new Array<SandPainter>(this.host.options.sandPainterCount);
