@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { Random, randomRange, seedFromString } from "@oliversalzburg/js-utils/data/random.js";
+import { Random, seedFromString } from "@oliversalzburg/js-utils/data/random.js";
 import { getDocumentElementTypeByIdStrict } from "@oliversalzburg/js-utils/dom/core.js";
 import { CanvasSandbox } from "@oliversalzburg/js-utils/graphics/canvas-sandbox.js";
 import {
@@ -26,6 +26,7 @@ const applicationOptions = {
   canvasColorLight: fromRGBA(255, 255, 255, 5),
   cityCount: 400,
   darkMode: true,
+  devMode: true,
   distanceMinimum: 333,
   drawTravelers: false,
   drawTravelersPerpendicular: true,
@@ -105,7 +106,7 @@ class SandPainter {
       this.maxAlpha / 10,
     );
 
-    this.grainDistance += randomRange(-0.05, 0.05);
+    this.grainDistance += this.host.random.nextRange(-0.05, 0.05);
     const maxg = 0.22;
     if (this.grainDistance < -maxg) {
       this.grainDistance = -maxg;
@@ -114,7 +115,7 @@ class SandPainter {
       this.grainDistance = maxg;
     }
 
-    this.p += randomRange(-0.05, 0.05);
+    this.p += this.host.random.nextRange(-0.05, 0.05);
     if (this.p < 0) {
       this.p = 0;
     }
@@ -177,7 +178,7 @@ class SandPainter {
       this.maxAlpha / 10,
     );
 
-    this.grainDistance += randomRange(-0.05, 0.05);
+    this.grainDistance += this.host.random.nextRange(-0.05, 0.05);
     const maxg = 0.22;
     if (this.grainDistance < -maxg) {
       this.grainDistance = -maxg;
@@ -186,7 +187,7 @@ class SandPainter {
       this.grainDistance = maxg;
     }
 
-    this.p += randomRange(-0.05, 0.05);
+    this.p += this.host.random.nextRange(-0.05, 0.05);
     if (this.p < 0) {
       this.p = 0;
     }
@@ -277,7 +278,7 @@ class City {
 
     if (this.host.options.blendingAdditive && this.host.options.blendingSubtractive) {
       // Both additive and subtractive blending (pick random)
-      const r = Math.random();
+      const r = this.host.random.nextFloat();
       if (r > 0.5) {
         this.plotter = putPixel32Add;
       } else {
@@ -321,7 +322,8 @@ class City {
 
   findFriend() {
     this.friend =
-      (this.idx + Math.trunc(1 + Math.random() * (this.host.options.cityCount / 5))) %
+      (this.idx +
+        Math.trunc(1 + this.host.random.nextFloat() * (this.host.options.cityCount / 5))) %
       this.host.options.cityCount;
     if (this.friend === this.idx) {
       this.findFriend();
@@ -332,7 +334,7 @@ class City {
     const nt = 11;
     for (let i = 0; i < nt; ++i) {
       // pick random distance between city
-      const distance = Math.random() * TWO_PI;
+      const distance = this.host.random.nextFloat() * TWO_PI;
       // draw traveler
       let dx =
         (Math.sin(distance) * (this.x - this.host.cities[this.friend].x)) / 2 +
@@ -340,10 +342,10 @@ class City {
       let dy =
         (Math.sin(distance) * (this.y - this.host.cities[this.friend].y)) / 2 +
         (this.y + this.host.cities[this.friend].y) / 2;
-      if (Math.random() * 1000 > 990) {
+      if (this.host.random.nextFloat() * 1000 > 990) {
         // noise
-        dx += Math.random() * 3 - Math.random() * 3;
-        dy += Math.random() * 3 - Math.random() * 3;
+        dx += this.host.random.nextFloat() * 3 - this.host.random.nextFloat() * 3;
+        dy += this.host.random.nextFloat() * 3 - this.host.random.nextFloat() * 3;
       }
       this.plotter(
         this.canvas,
@@ -359,10 +361,10 @@ class City {
       dy =
         (-1 * Math.sin(distance) * (this.y - this.host.cities[this.friend].y)) / 2 +
         (this.y + this.host.cities[this.friend].y) / 2;
-      if (Math.random() * 1000 > 990) {
+      if (this.host.random.nextFloat() * 1000 > 990) {
         // noise
-        dx += Math.random() * 3 - Math.random() * 3;
-        dy += Math.random() * 3 - Math.random() * 3;
+        dx += this.host.random.nextFloat() * 3 - this.host.random.nextFloat() * 3;
+        dy += this.host.random.nextFloat() * 3 - this.host.random.nextFloat() * 3;
       }
       this.plotter(
         this.canvas,
@@ -405,6 +407,7 @@ class Application {
   readonly cities: Array<City>;
   iterationCount: number;
   paused = false;
+  #finished = false;
 
   constructor(canvas: Canvas2D, options: ApplicationOptions) {
     this.options = options;
@@ -434,13 +437,19 @@ class Application {
       return;
     }
 
+    if (this.#finished) {
+      this.canvas.fade(fromRGBA(0, 0, 0, 10));
+      return;
+    }
+
     for (let iter = 0; iter < this.options.iterationsPerUpdate; ++iter) {
       for (const city of this.cities) {
         city.move();
       }
 
       if (++this.iterationCount > this.options.iterationsMax) {
-        this.start();
+        this.#finished = true;
+        this.moveToNext();
         return;
       }
     }
@@ -465,11 +474,28 @@ class Application {
     return 0.0;
   }
 
+  moveToNext(): void {
+    this.palette.nextPalette();
+    // Heavily mutate seed. Tiny increments produce a lot of similarity in long runs.
+    this.random = new Random(this.options.seed * 3);
+    this.options.seed = this.random.seed;
+
+    if (this.options.devMode) {
+      console.log(`${new Date().toLocaleTimeString()} Moving to next scene...`);
+    }
+
+    this.options.paletteIndex = this.palette.paletteIndex;
+
+    setTimeout(() => {
+      this.start();
+    }, 4000);
+  }
+
   start(options: Partial<ApplicationOptions> = {}) {
     this.reconfigure(this.canvas, options);
 
     this.paused = false;
-
+    this.#finished = false;
     this.iterationCount = 0;
 
     this.canvas.clearWith(
@@ -481,7 +507,7 @@ class Application {
 
     let velocity = this.options.velocity;
     let vvt = 0.2;
-    const ot = Math.random() * TWO_PI;
+    const ot = this.random.nextFloat() * TWO_PI;
     for (let cityIdx = 0; cityIdx < this.options.cityCount; ++cityIdx) {
       // This is the original implementation, but in Processing "( 1.1 - cityIdx / NUM_CITIES )" always evaluates to 1.1
       //const tinc = ot + ( 1.1 - cityIdx / NUM_CITIES ) * 2 * cityIdx * TWO_PI / NUM_CITIES;
