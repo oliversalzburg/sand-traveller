@@ -1,5 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { Random, seedFromString } from "@oliversalzburg/js-utils/data/random.js";
+import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { getDocumentElementTypeByIdStrict } from "@oliversalzburg/js-utils/dom/core.js";
 import { CanvasSandbox } from "@oliversalzburg/js-utils/graphics/canvas-sandbox.js";
 import {
@@ -9,7 +10,8 @@ import {
   putPixel32Sub,
 } from "@oliversalzburg/js-utils/graphics/canvas2d.js";
 import { fromRGBA } from "@oliversalzburg/js-utils/graphics/core.js";
-import { Palette, palette } from "@oliversalzburg/js-utils/graphics/palette.js";
+import { renderPaletteSample } from "@oliversalzburg/js-utils/graphics/palette-sampler.js";
+import { Palette, palette, paletteName } from "@oliversalzburg/js-utils/graphics/palette.js";
 
 const TWO_PI = Math.PI * 2;
 
@@ -499,6 +501,16 @@ class Application {
     this.#finished = false;
     this.iterationCount = 0;
 
+    const paletteNode = getDocumentElementTypeByIdStrict(document, "palette", HTMLCanvasElement);
+    paletteNode.width = document.body.clientWidth;
+    renderPaletteSample(this.palette, paletteNode);
+    const name = paletteName(this.palette.paletteIndex);
+
+    const hashNode = getDocumentElementTypeByIdStrict(document, "hash", HTMLSpanElement);
+    hashNode.innerText = `${hashCyrb53(
+      `${this.random.seed}@${this.canvas.width}x${this.canvas.height}`,
+    )}@${name.toLocaleLowerCase()}`;
+
     this.canvas.clearWith(
       ((this.options.darkMode ? this.options.canvasColorDark : this.options.canvasColorLight) <<
         2) |
@@ -541,7 +553,7 @@ class Application {
 }
 
 const urlParameters = new URLSearchParams(document.location.search);
-const devMode = urlParameters.get("devMode") !== null;
+applicationOptions.devMode = urlParameters.get("devMode") !== null;
 const canvasSandbox = new CanvasSandbox(
   window,
   canvasNode,
@@ -549,7 +561,7 @@ const canvasSandbox = new CanvasSandbox(
   Application,
   applicationOptions,
   {
-    devMode,
+    devMode: applicationOptions.devMode,
   },
 );
 canvasSandbox.run();
