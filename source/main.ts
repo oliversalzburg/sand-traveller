@@ -491,8 +491,9 @@ class Application {
     }, 4000);
   }
 
-  start(options: Partial<ApplicationOptions> = {}) {
-    this.reconfigure(this.canvas, options);
+  start() {
+    const pausedElement = getDocumentElementTypeByIdStrict(document, "paused", HTMLDivElement);
+    pausedElement.style.display = "none";
 
     this.paused = false;
     this.#finished = false;
@@ -534,6 +535,8 @@ class Application {
 
   pause(paused: boolean): void {
     this.paused = paused;
+    const pausedElement = getDocumentElementTypeByIdStrict(document, "paused", HTMLDivElement);
+    pausedElement.style.display = this.paused ? "block" : "none";
   }
 }
 
